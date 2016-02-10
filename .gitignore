@@ -1,0 +1,4 @@
+*.swp
+.vimrc
+.DS_Store
+.stack-work
