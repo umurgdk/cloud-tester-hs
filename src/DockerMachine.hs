@@ -5,34 +5,37 @@ module DockerMachine
   , findMachineByName
   ) where
 
-import Control.Monad
-import Control.Monad.Trans.Class
+import           Control.Monad
+import           Control.Monad.Trans.Class
 
-import Data.Either
-import Data.Maybe
-import Data.ByteString.Char8 as BC
+import           Data.ByteString.Char8      as BC
+import           Data.Either
+import           Data.Maybe
+import           Data.Semigroup
+import qualified Data.Text                  as T
+
 import qualified Control.Monad.Trans.Except as E
 
-import Types
-import SafeProcess
+import           SafeProcess
+import           Types
 
-import DockerMachine.Types
-import DockerMachine.Parser
+import           DockerMachine.Parser
+import           DockerMachine.Types
 
 getMachines :: ExceptIO [DockerMachine]
 getMachines = liftM parseList result
-    where 
+    where
         result = run "docker-machine ls"
 
-createMachine :: String -> ExceptIO String
+createMachine :: String -> ExceptIO T.Text
 createMachine name =
-    run $ "docker-machine create --driver \"virtualbox\" " ++ name
+    run $ "docker-machine create --driver \"virtualbox\" " <> name
 
 -- | Try to find docker machine and if not exists
 -- | try to create a new one
 getOrCreateMachine :: String -> ExceptIO DockerMachine
 getOrCreateMachine name =
     findMachine <$> getMachines >>= maybe create return
-    where 
+    where
         create = createMachine name >> getOrCreateMachine name
         findMachine = findMachineByName name

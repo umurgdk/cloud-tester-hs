@@ -1,11 +1,14 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
-import Control.Monad
+import           Control.Monad
+import           Data.Maybe
 
-import Types
-import Log
-import DockerMachine
-import DockerMachine.Types
+import           DockerMachine
+import           DockerMachine.Types
+import           Log
+import           Types
 
 defaultMachineName = "cloud-tester-hs"
 
@@ -15,7 +18,12 @@ main = void $ runExceptIOT $ do
 
     dockerMachine <- getOrCreateMachine defaultMachineName
 
-    logIO $ "Using docker machine " ++ machineName dockerMachine ++ "."
+    case machineState dockerMachine of
+        Stopped -> throwE "Docker machine is not runinng..."
+        Running -> void $ return ()
 
+    logIO $ "Using docker machine " ++ machineName dockerMachine ++ " @ " ++ fromJust (machineUrl dockerMachine)
+
+    logIO "Creating default Chrome Environment..."
 
 
