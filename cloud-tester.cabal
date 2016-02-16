@@ -39,6 +39,10 @@ library
                      , wreq                
                      , HsOpenSSL                
                      , http-client-openssl
+                     -- HTTP Server library
+                     , servant                
+                     , servant-server
+                     , servant-docs
                      -- JSON library
                      , aeson               
                      , lens-aeson               

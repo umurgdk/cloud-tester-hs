@@ -1,12 +1,8 @@
-{-# LANGUAGE DeriveGeneric          #-}
-{-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE OverloadedStrings      #-}
-{-# LANGUAGE TemplateHaskell        #-}
-{-# LANGUAGE TypeSynonymInstances   #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TypeSynonymInstances  #-}
 
-module DockerApi where
+module DockerAPI where
 
 import           Control.Lens                hiding ((.=))
 import           Data.Aeson
@@ -14,12 +10,10 @@ import           Data.Aeson.Lens             (key, _String)
 import           Data.Aeson.Types
 import           Data.ByteString.Lazy        (ByteString, toStrict)
 import qualified Data.ByteString.Lazy.Char8  as B
-import           Data.Char
 import           Data.List                   (find)
 import           Data.Maybe
 import qualified Data.Text                   as T
 import           Data.Text.Encoding
-import           GHC.Generics
 
 import           Network.HTTP.Client.OpenSSL
 import           Network.Wreq
@@ -28,37 +22,7 @@ import           OpenSSL                     (withOpenSSL)
 import           OpenSSL.Session             (SSLContext)
 import qualified OpenSSL.Session             as SSL
 
-capitalize :: String -> String
-capitalize (x:xs) = toUpper x : xs
-capitalize str = str
-
-dockerName :: String -> String
-dockerName name = capitalize $ dropWhile (not . isUpper) name
-
-data DockerInfo = DockerInfo
-    { dockerInfoName       :: !T.Text
-    , dockerInfoContainers :: Int
-    , dockerInfoImages     :: Int
-    } deriving (Show, Generic)
-
-makeFields ''DockerInfo
-
-instance FromJSON DockerInfo where
-    parseJSON = genericParseJSON $ defaultOptions { fieldLabelModifier = dockerName }
-
-
-data Container = Container
-    { containerId      :: !T.Text
-    , containerNames   :: ![T.Text]
-    , containerImage   :: !T.Text
-    , containerCommand :: !T.Text
-    , containerStatus  :: !T.Text
-    } deriving (Show, Generic)
-
-makeFields ''Container
-
-instance FromJSON Container where
-    parseJSON = genericParseJSON $ defaultOptions { fieldLabelModifier = dockerName }
+import qualified DockerAPI.Types             as DT
 
 getSSLContext :: IO SSLContext
 getSSLContext = do
@@ -88,16 +52,16 @@ postJSON_ :: ToJSON a => String -> a -> IO T.Text
 postJSON_ url postData = withOpenSSL $ responseBodyAsText <$> postWith optionsWithSSL url (toJSON postData)
     where responseBodyAsText = decodeUtf8 . toStrict . (^. responseBody)
 
-getDockerInfo :: String -> IO DockerInfo
+getDockerInfo :: String -> IO DT.DockerInfo
 getDockerInfo host = getJSON $ buildRestURL host "/info"
 
-getContainers :: String -> IO [Container]
+getContainers :: String -> IO [DT.Container]
 getContainers host = getJSON $ buildRestURL host "/containers/json?all=1"
 
-getContainer :: String -> String -> IO Container
+getContainer :: String -> String -> IO DT.Container
 getContainer host id = getJSON $ buildRestURL host $ "/containers/" ++ id ++ "/json"
 
-createContainer :: String ->  String -> IO Container
+createContainer :: String ->  String -> IO DT.Container
 createContainer host imageName = do
     response <- postJSON url createData
     let (Just id) = parseMaybe (.: "Id") response :: Maybe T.Text
@@ -106,7 +70,7 @@ createContainer host imageName = do
 
     where url = buildRestURL host "/containers/create"
           createData = object [ "Image" .= imageName ]
-          finder id' container = id' == (container ^. DockerApi.id)
+          finder id' container = id' == (container ^. DT.id)
 
 
 
