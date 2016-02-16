@@ -41,6 +41,7 @@ library
                      , http-client-openssl
                      -- JSON library
                      , aeson               
+                     , lens-aeson               
                      -- Performant String implementation
                      , text                
                      , semigroups
