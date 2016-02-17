@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE TypeSynonymInstances  #-}
 
-module DockerAPI where
+module DockerApi where
 
 import           Control.Lens                hiding ((.=))
 import           Data.Aeson
@@ -22,7 +22,7 @@ import           OpenSSL                     (withOpenSSL)
 import           OpenSSL.Session             (SSLContext)
 import qualified OpenSSL.Session             as SSL
 
-import qualified DockerAPI.Types             as DT
+import qualified DockerApi.Types             as DT
 
 getSSLContext :: IO SSLContext
 getSSLContext = do

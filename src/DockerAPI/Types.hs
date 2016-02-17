@@ -3,7 +3,7 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE TemplateHaskell        #-}
 
-module DockerAPI.Types where
+module DockerApi.Types where
 
 import           Control.Lens
 import           Data.Aeson
